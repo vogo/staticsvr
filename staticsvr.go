@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
 	"github.com/vogo/logger"
 	"os"
@@ -31,7 +30,6 @@ func main() {
 
 	logger.Infof("serve static on port %d at directory %s", port, staticDir)
 
-	httpRouter := router.New()
 	fs := &fasthttp.FS{
 		Root:               staticDir,
 		IndexNames:         []string{"index.html"},
@@ -41,10 +39,8 @@ func main() {
 		CacheDuration:      time.Minute,
 	}
 
-	httpRouter.GET("/*filepath", fs.NewRequestHandler())
-
 	server := &fasthttp.Server{
-		Handler:            httpRouter.Handler,
+		Handler:            fs.NewRequestHandler(),
 		ReadTimeout:        3600 * time.Second,
 		WriteTimeout:       3600 * time.Second,
 		MaxRequestBodySize: 1 << 20,
