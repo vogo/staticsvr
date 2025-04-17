@@ -4,11 +4,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/valyala/fasthttp"
 	"github.com/vogo/logger"
+	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -30,21 +29,8 @@ func main() {
 
 	logger.Infof("serve static on port %d at directory %s", port, staticDir)
 
-	fs := &fasthttp.FS{
-		Root:               staticDir,
-		IndexNames:         []string{"index.html"},
-		GenerateIndexPages: false,
-		Compress:           false,
-		AcceptByteRange:    false,
-		CacheDuration:      time.Minute,
-	}
+	fs := http.FileServer(http.Dir(staticDir))
+	http.Handle("/", fs)
 
-	server := &fasthttp.Server{
-		Handler:            fs.NewRequestHandler(),
-		ReadTimeout:        3600 * time.Second,
-		WriteTimeout:       3600 * time.Second,
-		MaxRequestBodySize: 1 << 20,
-	}
-
-	logger.Info(server.ListenAndServe(fmt.Sprintf(":%d", port)))
+	logger.Info(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
